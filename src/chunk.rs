@@ -15,7 +15,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
+    pub(crate) fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
         let mut message = chunk_type.bytes().to_vec();
         message.extend_from_slice(&data);
         Self { chunk_type, data, crc: CRC_PNG.checksum(&message) }
@@ -25,7 +25,7 @@ impl Chunk {
         self.data.len() as u32
     }
 
-    fn chunk_type(&self) -> &ChunkType {
+    pub(crate) fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
     }
 
@@ -37,7 +37,7 @@ impl Chunk {
         self.crc
     }
 
-    fn data_as_string(&self) -> Result<String, Utf8Error> {
+    pub(crate) fn data_as_string(&self) -> Result<String, Utf8Error> {
         let s = match std::str::from_utf8(&self.data) {
             Ok(s) => s.to_string(),
             Err(e) => { return Err(e); }
@@ -45,7 +45,7 @@ impl Chunk {
         Ok(s)
     }
 
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         self.length()
             .to_be_bytes()
             .iter()
@@ -76,7 +76,6 @@ impl TryFrom< &[u8]> for Chunk {
         let mut crc: [u8;4] = [0,0,0,0];
         reader.read_exact(&mut crc)?;
         let mut crc = u32::from_be_bytes(crc);
-        println!("crc: {}", crc);
 
         let chunk_type = match ChunkType::from_str(chunk_name) {
             Ok(chunk_type) => chunk_type,
