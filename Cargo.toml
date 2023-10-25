@@ -1,0 +1,13 @@
+[package]
+name = "png_steg"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.73.0"
+authors = ["Graydon Hoare", "Vindevogel Victor <victor.vindevogel@epitech.eu>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+crc = "3.0.1"
+derive-error = "0.0.5"
