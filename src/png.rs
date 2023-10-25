@@ -1,12 +1,12 @@
 use std::fmt::{Display, Formatter};
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader, Read, Seek};
 use anyhow::bail;
 use crate::chunk::Chunk;
 use crate::chunk_type::ChunkTypeError;
 use crate::png::ChunkTypeError::InvalidByteError;
 
 pub struct Png {
-    header: [u8; 8], // 137 80 78 71 13 10 26 10
+    header: [u8; 8],
     chunks: Vec<Chunk>,
 }
 
@@ -57,56 +57,38 @@ impl TryFrom<&[u8]> for Png {
     type Error = anyhow::Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        if value.len() < Png::STANDARD_HEADER.len() { bail!(InvalidByteError) }
+
         let mut reader = BufReader::new(value);
         let mut header: [u8; 8] = [0; 8];
         reader.read_exact(&mut header)?;
 
         if header != Self::STANDARD_HEADER {
-            return bail!(InvalidByteError);
+            bail!(InvalidByteError)
         }
-        println!("heloo");
 
         let mut chunks = Vec::new();
+        let mut length_buffer = [0x0; 4];
 
-        while let Ok(chunk) = Chunk::try_from(reader.fill_buf()?) {
-            // if chunk.
-            // if chunk.size() == 0 {
-            //     break; // Break the loop when there are no more chunks
-            // }
-            println!("{}", chunk);
-
-            // reader.consume(chunk.size()); // Consume the bytes read into the Chunk
-            // chunks.push(chunk);
+        while let Ok(()) = reader.read_exact(&mut length_buffer) {
+            let final_position = 4 + u32::from_be_bytes(length_buffer) + 4;
+            let mut buffer = vec![0; usize::try_from(final_position)?];
+            reader.read_exact(&mut buffer)?;
+            let chunk_data: Vec<u8> = length_buffer
+                .iter()
+                .copied()
+                .chain(buffer.into_iter())
+                .collect();
+            let chunk = Chunk::try_from(chunk_data.as_slice())?;
+            chunks.push(chunk);
         }
-        //
-        // while !remaining.is_empty() {
-        //     match Chunk::try_from(remaining) {
-        //         Ok(chunk) => {
-        //             chunks.push(chunk);
-        //             remaining = &remaining[chunk.size()..]; // Move to the next part of the buffer
-        //         }
-        //         Err(err) => {
-        //             return Err(err.into()); // Convert the error into a Box<dyn Error>
-        //         }
-        //     }
-        // }
-
-        // let mut data: Vec<Chunk> = Vec::new();
-        //
-        // reader.read_to_end(data);
-        // for chunk in
-        // reader.read_exact(&mut data)?;
-
-        Ok(Self {
-            header,
-            chunks
-        })
+        Ok(Png::from_chunks(chunks))
     }
 }
 
 impl Display for Png {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "test")
     }
 }
 

@@ -21,7 +21,7 @@ impl Chunk {
         Self { chunk_type, data, crc: CRC_PNG.checksum(&message) }
     }
 
-    fn length(&self) -> u32 {
+    pub fn length(&self) -> u32 {
         self.data.len() as u32
     }
 
