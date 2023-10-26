@@ -99,7 +99,7 @@ impl TryFrom< &[u8]> for Chunk {
 
 impl Display for Chunk {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.chunk_type)
+        write!(f, "Chunk type: {}, data: {}", &self.chunk_type, std::str::from_utf8(&self.data).unwrap())
     }
 }
 

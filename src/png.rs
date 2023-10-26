@@ -17,11 +17,11 @@ impl Png {
         Self { header: Self::STANDARD_HEADER, chunks }
     }
 
-    fn append_chunk(&mut self, chunk: Chunk) {
+    pub fn append_chunk(&mut self, chunk: Chunk) {
         self.chunks.push(chunk);
     }
 
-    fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk, anyhow::Error> {
+    pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk, anyhow::Error> {
         if let Some(index) = self.chunks.iter().position(|chunk| chunk.chunk_type().to_string() == chunk_type) {
             Ok(self.chunks.remove(index))
         } else {
@@ -37,7 +37,7 @@ impl Png {
         &self.chunks
     }
 
-    fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
+    pub(crate) fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
         if let Some(index) = self.chunks.iter().position(|chunk| chunk.chunk_type().to_string() == chunk_type) {
             Some(self.chunks.get(index).unwrap())
         } else {
@@ -45,7 +45,7 @@ impl Png {
         }
     }
 
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         let chunks: Vec<u8>= self.chunks.iter().flat_map(|chunk| chunk.as_bytes()).collect();
         let mut result = self.header.to_vec();
         result.extend(chunks);
@@ -63,9 +63,7 @@ impl TryFrom<&[u8]> for Png {
         let mut header: [u8; 8] = [0; 8];
         reader.read_exact(&mut header)?;
 
-        if header != Self::STANDARD_HEADER {
-            bail!(InvalidByteError)
-        }
+        if header != Self::STANDARD_HEADER { bail!(InvalidByteError) }
 
         let mut chunks = Vec::new();
         let mut length_buffer = [0x0; 4];

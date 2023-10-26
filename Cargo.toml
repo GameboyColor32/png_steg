@@ -9,5 +9,6 @@ authors = ["Graydon Hoare", "Vindevogel Victor <victor.vindevogel@epitech.eu>"]
 
 [dependencies]
 anyhow = "1.0.75"
+clap = { version = "4.4.7", features = ["derive"] }
 crc = "3.0.1"
 derive-error = "0.0.5"
